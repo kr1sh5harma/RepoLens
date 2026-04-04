@@ -5,6 +5,7 @@ const WORDS = ['any codebase', 'any developer', 'open source', 'your GitHub DNA'
 
 export default function TypewriterText({ text }: { text?: string }) {
   const words = text ? [text] : WORDS
+  const isOneShot = !!text // Single animation mode when text prop is provided
   const [wordIndex, setWordIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
   const [deleting, setDeleting] = useState(false)
@@ -24,7 +25,10 @@ export default function TypewriterText({ text }: { text?: string }) {
     }
 
     if (!deleting && charIndex === current.length) {
-      // Pause at end before deleting
+      // Stop after typing if single-shot mode, otherwise pause before deleting
+      if (isOneShot) {
+        return
+      }
       const t = setTimeout(() => setDeleting(true), 2000)
       return () => clearTimeout(t)
     }
@@ -42,7 +46,7 @@ export default function TypewriterText({ text }: { text?: string }) {
       setDeleting(false)
       setWordIndex(i => (i + 1) % words.length)
     }
-  }, [charIndex, deleting, wordIndex, words])
+  }, [charIndex, deleting, wordIndex, words, isOneShot])
 
   return (
     <span className="text-zinc-400 relative">

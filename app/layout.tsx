@@ -27,8 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${dmSans.variable} ${dmMono.variable}`}>
       <body className="font-sans bg-[#0a0a0a] text-[#efefef] min-h-screen">
-        <StarField />
-        {children}
+        <div className="transition-opacity duration-500">
+          {children}
+        </div>
       </body>
     </html>
   )

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { GHCommit, GHPR, GHContributor, GHLanguages, GHRepo } from '@/lib/github'
 import {
   computeLangBreakdown, computeCommitRhythm, computeCollabScore,
@@ -25,11 +26,21 @@ export default function RepoTabs({ repo, commits, prs, contributors, languages }
   return (
     <div>
       {/* Tab Bar */}
-      <div className="flex border-b border-[#1e1e1e] mb-8 overflow-x-auto">
-        {TABS.map(t => (
-          <button
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex border-b border-[#1e1e1e] mb-8 overflow-x-auto"
+      >
+        {TABS.map((t, i) => (
+          <motion.button
             key={t}
             onClick={() => setTab(t)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.05, duration: 0.3 }}
             className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
               tab === t
                 ? 'text-white border-white'
@@ -40,14 +51,24 @@ export default function RepoTabs({ repo, commits, prs, contributors, languages }
             {t === 'Commits' && <span className="ml-2 text-xs font-mono text-zinc-700">{commits.length}+</span>}
             {t === 'Pull Requests' && <span className="ml-2 text-xs font-mono text-zinc-700">{prs.length}</span>}
             {t === 'Contributors' && <span className="ml-2 text-xs font-mono text-zinc-700">{contributors.length}</span>}
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
-      {tab === 'Overview' && <OverviewPanel repo={repo} commits={commits} prs={prs} contributors={contributors} languages={languages} />}
-      {tab === 'Commits' && <CommitsPanel commits={commits} />}
-      {tab === 'Pull Requests' && <PRPanel prs={prs} />}
-      {tab === 'Contributors' && <ContributorsPanel contributors={contributors} />}
+      <AnimatePresence mode="wait">
+        {tab === 'Overview' && <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <OverviewPanel repo={repo} commits={commits} prs={prs} contributors={contributors} languages={languages} />
+        </motion.div>}
+        {tab === 'Commits' && <motion.div key="commits" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <CommitsPanel commits={commits} />
+        </motion.div>}
+        {tab === 'Pull Requests' && <motion.div key="prs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <PRPanel prs={prs} />
+        </motion.div>}
+        {tab === 'Contributors' && <motion.div key="contributors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <ContributorsPanel contributors={contributors} />
+        </motion.div>}
+      </AnimatePresence>
     </div>
   )
 }
@@ -65,31 +86,53 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
   const maxHeat = Math.max(...heatmap, 1)
 
   return (
-    <div className="space-y-8 animate-fade-up">
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-8"
+    >
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-3"
+      >
         {[
           { label: 'Stars', value: fmtNum(repo.stargazers_count), color: '#fbbf24' },
           { label: 'Forks', value: fmtNum(repo.forks_count), color: '#60a5fa' },
           { label: 'Watchers', value: fmtNum(repo.watchers_count), color: '#a78bfa' },
           { label: 'Open Issues', value: String(repo.open_issues_count), color: '#f87171' },
-        ].map(s => (
-          <div key={s.label} className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
+        ].map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.08, duration: 0.3 }}
+            whileHover={{ scale: 1.05, y: -4 }}
+            className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4 transition-all duration-300 cursor-default"
+          >
             <div className="text-[11px] text-zinc-600 font-mono uppercase tracking-wider mb-2">{s.label}</div>
             <div className="text-3xl font-light tracking-tight" style={{ color: s.color }}>{s.value}</div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Insight Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Insight Cards */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-3"
+      >
         <InsightCard
           icon="⚡"
           title="Commit Rhythm"
           label={rhythm.label}
           desc={rhythm.desc}
           color={rhythm.color}
+          delay={0}
         />
         <InsightCard
           icon="✍️"
@@ -97,153 +140,144 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
           label={commitStyle.label}
           desc={commitStyle.desc}
           color="#a78bfa"
+          delay={0.1}
         />
         <InsightCard
           icon="🤝"
           title="Collaboration"
           label={`${collabScore}/100`}
-          desc={collabScore > 70 ? 'Highly collaborative project' : collabScore > 40 ? 'Moderate collaboration' : 'Primarily solo project'}
+          desc={collabScore > 70 ? 'Highly collaborative' : collabScore > 40 ? 'Moderate collaboration' : 'Solo project'}
           color={collabScore > 70 ? '#4ade80' : collabScore > 40 ? '#fbbf24' : '#888'}
+          delay={0.2}
         />
-      </div>
+      </motion.div>
 
-      {/* Code Health + PR Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Health Score */}
-        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
+      {/* Health & PR Stats */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+        >
           <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Repository Health</h3>
           <div className="flex items-end gap-3 mb-4">
-            <span className="text-5xl font-light" style={{ color: health > 75 ? '#4ade80' : health > 50 ? '#fbbf24' : '#f87171' }}>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="text-5xl font-light"
+              style={{ color: health > 75 ? '#4ade80' : health > 50 ? '#fbbf24' : '#f87171' }}
+            >
               {health}
-            </span>
+            </motion.span>
             <span className="text-zinc-600 text-sm mb-2">/ 100</span>
           </div>
-          <div className="w-full bg-[#1a1a1a] rounded-full h-1.5">
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="w-full bg-[#1a1a1a] rounded-full h-1.5 origin-left"
+          >
             <div
-              className="h-1.5 rounded-full transition-all"
+              className="h-1.5 rounded-full"
               style={{
                 width: `${health}%`,
                 background: health > 75 ? '#4ade80' : health > 50 ? '#fbbf24' : '#f87171'
               }}
             />
-          </div>
-          <div className="mt-4 space-y-1.5 text-xs font-mono">
-            {[
-              { label: 'Has description', ok: !!repo.description },
-              { label: 'Has license', ok: !!repo.license },
-              { label: 'Has topics', ok: (repo.topics?.length ?? 0) > 0 },
-              { label: 'Active recently', ok: (Date.now() - new Date(repo.pushed_at).getTime()) < 90 * 86400000 },
-              { label: 'Has homepage', ok: !!repo.homepage },
-            ].map(item => (
-              <div key={item.label} className="flex items-center justify-between text-zinc-500">
-                <span>{item.label}</span>
-                <span style={{ color: item.ok ? '#4ade80' : '#444' }}>{item.ok ? '✓' : '○'}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* PR Stats */}
-        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
-          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Pull Request Overview</h3>
+        <motion.div
+          whileHover={{ y: -4 }}
+          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+        >
+          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">PR Overview</h3>
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[
               { label: 'Open', value: openPRs, color: '#4ade80' },
               { label: 'Merged', value: mergedPRs, color: '#a78bfa' },
               { label: 'Closed', value: prs.filter(p => !p.merged_at && p.state === 'closed').length, color: '#f87171' },
-            ].map(s => (
-              <div key={s.label} className="text-center">
-                <div className="text-2xl font-light mb-1" style={{ color: s.color }}>{s.value}</div>
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                className="text-center"
+              >
+                <div className="text-2xl font-light" style={{ color: s.color }}>{s.value}</div>
                 <div className="text-[10px] font-mono text-zinc-600 uppercase">{s.label}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
-          {prs.length > 0 && (
-            <div className="w-full h-2 rounded-full bg-[#1a1a1a] overflow-hidden flex">
-              {openPRs > 0 && <div style={{ width: `${(openPRs/prs.length)*100}%`, background: '#4ade80' }} className="h-full" />}
-              {mergedPRs > 0 && <div style={{ width: `${(mergedPRs/prs.length)*100}%`, background: '#a78bfa' }} className="h-full" />}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Commit Activity Heatmap */}
-      <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
-        <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Commit Activity — Last 12 Weeks</h3>
-        <div className="flex items-end gap-1.5 h-16">
-          {heatmap.map((count, i) => (
-            <div key={i} className="flex-1 flex flex-col justify-end gap-1">
-              <div
-                className="w-full rounded-sm transition-all"
-                style={{
-                  height: `${(count / maxHeat) * 52}px`,
-                  minHeight: count > 0 ? '4px' : '2px',
-                  background: count === 0 ? '#1a1a1a' : `rgba(74, 222, 128, ${0.3 + (count / maxHeat) * 0.7})`,
-                }}
-                title={`${count} commit${count !== 1 ? 's' : ''}`}
-              />
-              {i % 4 === 0 && (
-                <div className="text-[9px] font-mono text-zinc-700 text-center">
-                  {i === 0 ? '12w' : i === 4 ? '8w' : i === 8 ? '4w' : ''}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Language Breakdown */}
       {langBreakdown.length > 0 && (
-        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+        >
           <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-5">Language Breakdown</h3>
-          {/* Full bar */}
-          <div className="flex h-2 rounded-full overflow-hidden mb-5 gap-px">
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex h-2 rounded-full overflow-hidden mb-5 gap-px origin-left"
+          >
             {langBreakdown.map(l => (
-              <div key={l.name} style={{ width: `${l.pct}%`, background: l.color }} title={`${l.name}: ${l.pct}%`} />
+              <div key={l.name} style={{ width: `${l.pct}%`, background: l.color }} />
             ))}
-          </div>
+          </motion.div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {langBreakdown.map(l => (
-              <div key={l.name} className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: l.color }} />
-                <div className="min-w-0">
-                  <div className="text-xs text-zinc-300 font-mono truncate">{l.name}</div>
+            {langBreakdown.map((l, i) => (
+              <motion.div
+                key={l.name}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 + i * 0.05 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-2 h-2 rounded-full" style={{ background: l.color }} />
+                <div>
+                  <div className="text-xs text-zinc-300 font-mono">{l.name}</div>
                   <div className="text-xs text-zinc-600 font-mono">{l.pct}%</div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-
-      {/* Topics */}
-      {repo.topics && repo.topics.length > 0 && (
-        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
-          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Topics</h3>
-          <div className="flex flex-wrap gap-2">
-            {repo.topics.map(t => (
-              <span key={t} className="text-xs font-mono text-zinc-400 bg-[#1a1a1a] border border-[#252525] rounded-full px-3 py-1">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </motion.div>
   )
 }
 
-// ─── COMMITS ───────────────────────────────────────────────────────────────────
 function CommitsPanel({ commits }: { commits: GHCommit[] }) {
-  if (!commits.length) return <Empty msg="No commits found." />
+  if (!commits.length) return <Empty msg="No commits found" />
   return (
-    <div className="space-y-px animate-fade-up">
-      {commits.map(c => (
-        <a
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-px"
+    >
+      {commits.map((c, i) => (
+        <motion.a
           key={c.sha}
           href={c.html_url}
           target="_blank"
           rel="noopener noreferrer"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: i * 0.02 }}
+          whileHover={{ x: 8 }}
           className="flex items-start gap-4 p-4 rounded-xl hover:bg-[#111] border border-transparent hover:border-[#1e1e1e] transition-all group"
         >
           {c.author?.avatar_url && (
@@ -255,145 +289,145 @@ function CommitsPanel({ commits }: { commits: GHCommit[] }) {
               className="rounded-full shrink-0 mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity"
             />
           )}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-zinc-200 group-hover:text-white transition-colors line-clamp-2 leading-snug mb-1.5">
+          <div className="flex-1">
+            <p className="text-sm text-zinc-200 group-hover:text-white transition-colors line-clamp-2 mb-1.5">
               {c.commit.message.split('\n')[0]}
             </p>
-            <div className="flex items-center gap-3 text-xs font-mono text-zinc-600">
+            <div className="flex gap-3 text-xs font-mono text-zinc-600">
               <span>{c.commit.author.name}</span>
               <span>·</span>
               <span>{timeAgo(c.commit.author.date)}</span>
-              <span>·</span>
-              <span>{formatDate(c.commit.author.date)}</span>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-zinc-700 bg-[#1a1a1a] border border-[#222] rounded px-2 py-0.5 shrink-0 mt-0.5 group-hover:text-zinc-400 transition-colors">
+          <span className="text-[11px] font-mono text-zinc-700 bg-[#1a1a1a] border border-[#222] rounded px-2 py-0.5 shrink-0">
             {c.sha.slice(0, 7)}
           </span>
-        </a>
+        </motion.a>
       ))}
-    </div>
+    </motion.div>
   )
 }
 
-// ─── PULL REQUESTS ─────────────────────────────────────────────────────────────
 function PRPanel({ prs }: { prs: GHPR[] }) {
-  if (!prs.length) return <Empty msg="No pull requests found." />
+  if (!prs.length) return <Empty msg="No PRs found" />
   return (
-    <div className="space-y-2 animate-fade-up">
-      {prs.map(pr => {
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-2"
+    >
+      {prs.map((pr, i) => {
         const state = pr.merged_at ? 'merged' : pr.state
-        const stateStyle = {
-          open: { color: '#4ade80', bg: '#0d2b0d', border: '#1a4a1a' },
-          merged: { color: '#a78bfa', bg: '#1a0d2b', border: '#2a1a4a' },
-          closed: { color: '#f87171', bg: '#2b0d0d', border: '#4a1a1a' },
-        }[state] ?? { color: '#888', bg: '#1a1a1a', border: '#2a2a2a' }
+        const colors = {
+          open: { color: '#4ade80', bg: '#0d2b0d' },
+          merged: { color: '#a78bfa', bg: '#1a0d2b' },
+          closed: { color: '#f87171', bg: '#2b0d0d' },
+        }[state] || { color: '#888', bg: '#1a1a1a' }
 
         return (
-          <a
+          <motion.a
             key={pr.number}
             href={pr.html_url}
             target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-start gap-4 p-4 bg-[#111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] hover:bg-[#141414] transition-all group"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.02 }}
+            whileHover={{ x: 8 }}
+            className="flex items-start gap-4 p-4 bg-[#111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] transition-all group"
           >
-            <span
-              className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full mt-0.5 shrink-0 border"
-              style={{ color: stateStyle.color, background: stateStyle.bg, borderColor: stateStyle.border }}
+            <span style={{ color: colors.color }} className="text-lg mt-0.5">
+              {state === 'open' ? '●' : state === 'merged' ? '✓' : '✕'}
+            </span>
+            <div className="flex-1">
+              <p className="text-sm text-zinc-200 group-hover:text-white transition-colors mb-1">
+                #{pr.number} · {pr.title}
+              </p>
+              <div className="flex gap-3 text-xs font-mono text-zinc-600">
+                <span>{pr.user?.login}</span>
+                <span>·</span>
+                <span>{timeAgo(pr.created_at)}</span>
+              </div>
+            </div>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.02 + 0.1 }}
+              style={{ color: colors.color, backgroundColor: colors.bg }}
+              className="text-[10px] font-mono px-2 py-0.5 rounded shrink-0 border border-current"
             >
               {state}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-zinc-200 group-hover:text-white mb-1.5 transition-colors">{pr.title}</p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono text-zinc-600">
-                <span>#{pr.number}</span>
-                <span>by {pr.user.login}</span>
-                <span>{timeAgo(pr.created_at)}</span>
-                {pr.additions !== undefined && (
-                  <span className="flex gap-2">
-                    <span className="text-emerald-700">+{fmtNum(pr.additions)}</span>
-                    <span className="text-red-900">-{fmtNum(pr.deletions)}</span>
-                  </span>
-                )}
-              </div>
-              {pr.labels.length > 0 && (
-                <div className="flex gap-1.5 mt-2 flex-wrap">
-                  {pr.labels.map(l => (
-                    <span
-                      key={l.name}
-                      className="text-[10px] font-mono px-2 py-0.5 rounded-full"
-                      style={{ background: `#${l.color}22`, color: `#${l.color}`, border: `1px solid #${l.color}44` }}
-                    >
-                      {l.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Image
-              src={pr.user.avatar_url}
-              alt={pr.user.login}
-              width={28} height={28}
-              unoptimized
-              className="rounded-full shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
-            />
-          </a>
+            </motion.span>
+          </motion.a>
         )
       })}
-    </div>
+    </motion.div>
   )
 }
 
-// ─── CONTRIBUTORS ─────────────────────────────────────────────────────────────
 function ContributorsPanel({ contributors }: { contributors: GHContributor[] }) {
-  if (!contributors.length) return <Empty msg="No contributor data available." />
-  const max = contributors[0]?.contributions ?? 1
+  if (!contributors.length) return <Empty msg="No contributors found" />
   return (
-    <div className="space-y-3 animate-fade-up">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
+    >
       {contributors.map((c, i) => (
-        <a
+        <motion.a
           key={c.login}
-          href={c.html_url}
+          href={`https://github.com/${c.login}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-4 p-4 bg-[#111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] hover:bg-[#141414] transition-all group"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: i * 0.03 }}
+          whileHover={{ scale: 1.1 }}
+          className="flex flex-col items-center gap-2 group"
         >
-          <span className="text-xs font-mono text-zinc-700 w-5 text-right shrink-0">#{i + 1}</span>
-          <Image src={c.avatar_url} alt={c.login} width={36} height={36} unoptimized className="rounded-full shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm text-zinc-200 font-mono group-hover:text-white transition-colors mb-1">{c.login}</div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-[#1a1a1a] rounded-full h-1 overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${(c.contributions / max) * 100}%`, background: '#4ade80' }}
-                />
-              </div>
-              <span className="text-xs font-mono text-zinc-600 shrink-0">{fmtNum(c.contributions)} commits</span>
-            </div>
-          </div>
-        </a>
+          <Image
+            src={c.avatar_url}
+            alt={c.login}
+            width={48}
+            height={48}
+            unoptimized
+            className="w-12 h-12 rounded-full border border-[#1e1e1e] group-hover:border-[#2a2a2a] transition-all"
+          />
+          <p className="text-xs font-mono text-zinc-300 group-hover:text-white transition-colors">{c.login}</p>
+          <p className="text-[10px] text-zinc-600 font-mono">{fmtNum(c.contributions)} commits</p>
+        </motion.a>
       ))}
-    </div>
+    </motion.div>
   )
 }
 
-// ─── INSIGHT CARD ─────────────────────────────────────────────────────────────
-function InsightCard({ icon, title, label, desc, color }: { icon: string; title: string; label: string; desc: string; color: string }) {
+function InsightCard({ icon, title, label, desc, color, delay = 0 }: {
+  icon: string; title: string; label: string; desc: string; color: string; delay?: number
+}) {
   return (
-    <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-base">{icon}</span>
-        <span className="text-[11px] font-mono text-zinc-600 uppercase tracking-wider">{title}</span>
-      </div>
-      <div className="text-sm font-medium mb-1" style={{ color }}>{label}</div>
-      <div className="text-xs text-zinc-600">{desc}</div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+      whileHover={{ y: -4 }}
+      className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5 transition-all duration-300 cursor-default"
+    >
+      <div className="text-2xl mb-3">{icon}</div>
+      <h4 className="text-xs font-mono text-zinc-600 uppercase tracking-wider mb-1">{title}</h4>
+      <div className="text-xl font-light mb-1" style={{ color }}>{label}</div>
+      <p className="text-xs text-zinc-500">{desc}</p>
+    </motion.div>
   )
 }
 
 function Empty({ msg }: { msg: string }) {
   return (
-    <div className="text-center py-16 text-zinc-700 font-mono text-sm">{msg}</div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <div className="text-4xl mb-4">📭</div>
+      <p className="text-zinc-500 font-mono text-sm">{msg}</p>
+    </motion.div>
   )
 }

@@ -1,7 +1,8 @@
 'use client'
 import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { GHRepo } from '@/lib/github'
-import RepoCard from '@/components/RepoCard'
+import AnimatedRepoCard from '@/components/AnimatedRepoCard'
 
 type Sort = 'updated' | 'stars' | 'forks' | 'name'
 
@@ -47,24 +48,54 @@ export default function RepoFilter({ repos, username }: Props) {
   const forkedCount = repos.filter(r => r.fork).length
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5"
+      >
         <div>
           <h2 className="text-sm font-medium">Repositories</h2>
-          <p className="text-xs text-zinc-600 font-mono mt-0.5">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className="text-xs text-zinc-600 font-mono mt-0.5"
+          >
             {repos.length} total · {sourceCount} source · {forkedCount} forked
             {filtered.length !== repos.length && (
-              <span className="ml-2 text-emerald-600">· {filtered.length} shown</span>
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="ml-2 text-emerald-600"
+              >
+                · {filtered.length} shown
+              </motion.span>
             )}
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.5 }}
+        className="flex flex-wrap items-center gap-2 mb-6"
+      >
         {/* Search */}
-        <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-[#444] transition-colors flex-1 min-w-[180px]">
+        <motion.div
+          className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-[#444] transition-colors flex-1 min-w-[180px]"
+          whileFocus={{ borderColor: '#444', boxShadow: '0 0 15px rgba(255, 255, 255, 0.05)' }}
+          transition={{ duration: 0.2 }}
+        >
           <svg className="w-3.5 h-3.5 ml-3 text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -74,36 +105,54 @@ export default function RepoFilter({ repos, username }: Props) {
             placeholder="Search repos..."
             className="bg-transparent text-sm text-zinc-200 placeholder-zinc-600 font-mono px-2.5 py-2 outline-none w-full"
           />
-          {query && (
-            <button onClick={() => setQuery('')} className="pr-3 text-zinc-500 hover:text-zinc-300 transition-colors text-xs">✕</button>
-          )}
-        </div>
+          <AnimatePresence>
+            {query && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={() => setQuery('')}
+                className="pr-3 text-zinc-500 hover:text-zinc-300 transition-colors text-xs"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ✕
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Language filter */}
-        <select
+        <motion.select
           value={lang}
           onChange={e => setLang(e.target.value)}
           className="bg-[#111] border border-[#2a2a2a] text-sm text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-[#444] transition-colors cursor-pointer"
+          whileHover={{ borderColor: '#444' }}
+          whileTap={{ scale: 0.98 }}
         >
           <option value="all">All languages</option>
           {languages.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
+        </motion.select>
 
         {/* Sort */}
-        <select
+        <motion.select
           value={sort}
           onChange={e => setSort(e.target.value as Sort)}
           className="bg-[#111] border border-[#2a2a2a] text-sm text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-[#444] transition-colors cursor-pointer"
+          whileHover={{ borderColor: '#444' }}
+          whileTap={{ scale: 0.98 }}
         >
           <option value="updated">Recently updated</option>
           <option value="stars">Most stars</option>
           <option value="forks">Most forks</option>
           <option value="name">Alphabetical</option>
-        </select>
+        </motion.select>
 
         {/* Forks toggle */}
-        <button
+        <motion.button
           onClick={() => setShowForks(v => !v)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`text-xs font-mono px-3 py-2 rounded-lg border transition-all ${
             showForks
               ? 'bg-[#111] border-[#2a2a2a] text-zinc-500 hover:border-[#444]'
@@ -111,26 +160,52 @@ export default function RepoFilter({ repos, username }: Props) {
           }`}
         >
           {showForks ? 'Hide forks' : 'Show forks'}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Repo Grid */}
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="text-4xl mb-4">🔍</div>
-          <p className="text-zinc-500 font-mono text-sm mb-1">No repositories match your filters</p>
-          <button
-            onClick={() => { setQuery(''); setLang('all'); setShowForks(true) }}
-            className="text-xs text-zinc-600 hover:text-zinc-300 underline underline-offset-2 transition-colors mt-2 font-mono"
+      <AnimatePresence mode="wait">
+        {filtered.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center justify-center py-20 text-center"
           >
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map(repo => <RepoCard key={repo.id} repo={repo} />)}
-        </div>
-      )}
-    </div>
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-4xl mb-4"
+            >
+              🔍
+            </motion.div>
+            <p className="text-zinc-500 font-mono text-sm mb-1">No repositories match your filters</p>
+            <motion.button
+              onClick={() => { setQuery(''); setLang('all'); setShowForks(true) }}
+              whileHover={{ scale: 1.05, textDecoration: 'underline' }}
+              whileTap={{ scale: 0.95 }}
+              className="text-xs text-zinc-600 hover:text-zinc-300 underline underline-offset-2 transition-colors mt-2 font-mono"
+            >
+              Clear filters
+            </motion.button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
+            {filtered.map((repo, i) => (
+              <AnimatedRepoCard key={repo.id} repo={repo} index={i} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
