@@ -8,6 +8,8 @@ import {
   computeRepoHealth, analyzeCommitStyle, buildCommitHeatmap,
   timeAgo, formatDate, fmtNum
 } from '@/lib/utils'
+import RepoLifecycleChart from '@/components/RepoLifecycleChart'
+import { Loader2 } from 'lucide-react'
 
 interface Props {
   repo: GHRepo
@@ -22,6 +24,18 @@ type Tab = typeof TABS[number]
 
 export default function RepoTabs({ repo, commits, prs, contributors, languages }: Props) {
   const [tab, setTab] = useState<Tab>('Overview')
+  const [activeTab, setActiveTab] = useState<Tab>('Overview')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleTabChange = (t: Tab) => {
+    if (t === activeTab) return
+    setActiveTab(t)
+    setIsLoading(true)
+    setTimeout(() => {
+      setTab(t)
+      setIsLoading(false)
+    }, 300)
+  }
 
   return (
     <div>
@@ -30,45 +44,56 @@ export default function RepoTabs({ repo, commits, prs, contributors, languages }
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex border-b border-[#1e1e1e] mb-8 overflow-x-auto"
+        className="flex border-b border-zinc-200 dark:border-[#1e1e1e] mb-8 overflow-x-auto"
       >
         {TABS.map((t, i) => (
           <motion.button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => handleTabChange(t)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.05, duration: 0.3 }}
-            className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
-              tab === t
-                ? 'text-white border-white'
-                : 'text-zinc-500 border-transparent hover:text-zinc-300'
+            className={`px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === t
+                ? 'text-slate-900 border-slate-900 dark:text-white dark:border-white'
+                : 'text-slate-500 dark:text-zinc-500 border-transparent hover:text-slate-800 dark:hover:text-zinc-300'
             }`}
           >
+            {isLoading && activeTab === t && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              </motion.div>
+            )}
             {t}
-            {t === 'Commits' && <span className="ml-2 text-xs font-mono text-zinc-700">{commits.length}+</span>}
-            {t === 'Pull Requests' && <span className="ml-2 text-xs font-mono text-zinc-700">{prs.length}</span>}
-            {t === 'Contributors' && <span className="ml-2 text-xs font-mono text-zinc-700">{contributors.length}</span>}
+            {t === 'Commits' && <span className="text-xs font-mono text-slate-500 dark:text-zinc-700">{commits.length}+</span>}
+            {t === 'Pull Requests' && <span className="text-xs font-mono text-slate-500 dark:text-zinc-700">{prs.length}</span>}
+            {t === 'Contributors' && <span className="text-xs font-mono text-slate-500 dark:text-zinc-700">{contributors.length}</span>}
           </motion.button>
         ))}
       </motion.div>
 
-      <AnimatePresence mode="wait">
-        {tab === 'Overview' && <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <OverviewPanel repo={repo} commits={commits} prs={prs} contributors={contributors} languages={languages} />
-        </motion.div>}
-        {tab === 'Commits' && <motion.div key="commits" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <CommitsPanel commits={commits} />
-        </motion.div>}
-        {tab === 'Pull Requests' && <motion.div key="prs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <PRPanel prs={prs} />
-        </motion.div>}
-        {tab === 'Contributors' && <motion.div key="contributors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-          <ContributorsPanel contributors={contributors} />
-        </motion.div>}
-      </AnimatePresence>
+      <div className={`transition-opacity duration-300 ${isLoading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+        <AnimatePresence mode="wait">
+          {tab === 'Overview' && <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+            <OverviewPanel repo={repo} commits={commits} prs={prs} contributors={contributors} languages={languages} />
+          </motion.div>}
+          {tab === 'Commits' && <motion.div key="commits" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+            <CommitsPanel commits={commits} />
+          </motion.div>}
+          {tab === 'Pull Requests' && <motion.div key="prs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+            <PRPanel prs={prs} />
+          </motion.div>}
+          {tab === 'Contributors' && <motion.div key="contributors" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+            <ContributorsPanel contributors={contributors} />
+          </motion.div>}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
@@ -111,9 +136,9 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.08, duration: 0.3 }}
             whileHover={{ scale: 1.05, y: -4 }}
-            className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4 transition-all duration-300 cursor-default"
+            className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-4 transition-all duration-300 cursor-default"
           >
-            <div className="text-[11px] text-zinc-600 font-mono uppercase tracking-wider mb-2">{s.label}</div>
+            <div className="text-[11px] text-slate-500 dark:text-zinc-600 font-mono uppercase tracking-wider mb-2">{s.label}</div>
             <div className="text-3xl font-light tracking-tight" style={{ color: s.color }}>{s.value}</div>
           </motion.div>
         ))}
@@ -161,32 +186,67 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
       >
         <motion.div
           whileHover={{ y: -4 }}
-          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+          className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-5"
         >
-          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">Repository Health</h3>
+          <h3 className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-4">Repository Health</h3>
           <div className="flex items-end gap-3 mb-4">
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.4 }}
               className="text-5xl font-light"
-              style={{ color: health > 75 ? '#4ade80' : health > 50 ? '#fbbf24' : '#f87171' }}
+              style={{ color: health.score > 75 ? '#4ade80' : health.score > 50 ? '#fbbf24' : '#f87171' }}
             >
-              {health}
+              {health.score}
             </motion.span>
-            <span className="text-zinc-600 text-sm mb-2">/ 100</span>
+            <span className="text-slate-500 dark:text-zinc-600 text-sm mb-2">/ 100</span>
           </div>
+          <div className="mb-4">
+            <p className="text-sm text-slate-600 dark:text-zinc-400 mb-3 font-mono">{health.reason}</p>
+            <div className="space-y-1.5">
+              {health.checkpoints.map((cp, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + i * 0.05 }}
+                  className="text-xs text-slate-500 dark:text-zinc-500 font-mono"
+                >
+                  {cp}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+          {health.recommendations.length > 0 && (
+            <div className="mb-4 pt-3 border-t border-zinc-200 dark:border-[#1e1e1e]">
+              <p className="text-xs text-slate-500 dark:text-zinc-500 font-mono mb-2 uppercase">What's left to improve:</p>
+              <div className="space-y-1.5">
+                {health.recommendations.map((rec, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.05 }}
+                    className="text-xs text-amber-600 font-mono flex items-start gap-2"
+                  >
+                    <span className="mt-0.5">→</span>
+                    <span>{rec}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            className="w-full bg-[#1a1a1a] rounded-full h-1.5 origin-left"
+            className="w-full bg-zinc-100 dark:bg-[#1a1a1a] rounded-full h-1.5 origin-left"
           >
             <div
               className="h-1.5 rounded-full"
               style={{
-                width: `${health}%`,
-                background: health > 75 ? '#4ade80' : health > 50 ? '#fbbf24' : '#f87171'
+                width: `${health.score}%`,
+                background: health.score > 75 ? '#4ade80' : health.score > 50 ? '#fbbf24' : '#f87171'
               }}
             />
           </motion.div>
@@ -194,29 +254,57 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
 
         <motion.div
           whileHover={{ y: -4 }}
-          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+          className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-5"
         >
-          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">PR Overview</h3>
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {[
-              { label: 'Open', value: openPRs, color: '#4ade80' },
-              { label: 'Merged', value: mergedPRs, color: '#a78bfa' },
-              { label: 'Closed', value: prs.filter(p => !p.merged_at && p.state === 'closed').length, color: '#f87171' },
-            ].map((s, i) => (
+          <h3 className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-4">PR Overview</h3>
+          {prs.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">📭</div>
+              <p className="text-sm text-slate-500 dark:text-zinc-500">No pull requests yet</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Open', value: openPRs, color: '#4ade80' },
+                  { label: 'Merged', value: mergedPRs, color: '#a78bfa' },
+                  { label: 'Closed', value: prs.filter(p => !p.merged_at && p.state === 'closed').length, color: '#f87171' },
+                ].map((s, i) => (
+                  <motion.div
+                    key={s.label}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 + i * 0.05 }}
+                    className="text-center"
+                  >
+                    <div className="text-2xl font-light" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-[10px] font-mono text-slate-500 dark:text-zinc-600 uppercase">{s.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* PR Distribution Bar */}
               <motion.div
-                key={s.label}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                className="text-center"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="flex h-2 rounded-full overflow-hidden gap-px origin-left"
               >
-                <div className="text-2xl font-light" style={{ color: s.color }}>{s.value}</div>
-                <div className="text-[10px] font-mono text-zinc-600 uppercase">{s.label}</div>
+                <div style={{ width: `${(openPRs / prs.length) * 100}%`, background: '#4ade80' }} />
+                <div style={{ width: `${(mergedPRs / prs.length) * 100}%`, background: '#a78bfa' }} />
+                <div style={{ width: `${((prs.filter(p => !p.merged_at && p.state === 'closed').length) / prs.length) * 100}%`, background: '#f87171' }} />
               </motion.div>
-            ))}
-          </div>
+              
+              <div className="text-xs text-slate-500 dark:text-zinc-600 font-mono">
+                Total: <span className="text-slate-700 dark:text-zinc-400">{prs.length} pull requests</span>
+              </div>
+            </div>
+          )}
         </motion.div>
       </motion.div>
+
+      {/* Repo Lifecycle Chart */}
+      {commits.length > 0 && <RepoLifecycleChart repo={repo} commits={commits} />}
 
       {/* Language Breakdown */}
       {langBreakdown.length > 0 && (
@@ -224,9 +312,9 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5"
+          className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-5"
         >
-          <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-5">Language Breakdown</h3>
+          <h3 className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-wider mb-5">Language Breakdown</h3>
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
@@ -248,8 +336,8 @@ function OverviewPanel({ repo, commits, prs, contributors, languages }: Props) {
               >
                 <div className="w-2 h-2 rounded-full" style={{ background: l.color }} />
                 <div>
-                  <div className="text-xs text-zinc-300 font-mono">{l.name}</div>
-                  <div className="text-xs text-zinc-600 font-mono">{l.pct}%</div>
+                  <div className="text-xs text-slate-700 dark:text-zinc-300 font-mono">{l.name}</div>
+                  <div className="text-xs text-slate-500 dark:text-zinc-600 font-mono">{l.pct}%</div>
                 </div>
               </motion.div>
             ))}
@@ -278,7 +366,7 @@ function CommitsPanel({ commits }: { commits: GHCommit[] }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.02 }}
           whileHover={{ x: 8 }}
-          className="flex items-start gap-4 p-4 rounded-xl hover:bg-[#111] border border-transparent hover:border-[#1e1e1e] transition-all group"
+          className="flex items-start gap-4 p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-[#111] border border-transparent hover:border-zinc-200 dark:hover:border-[#1e1e1e] transition-all group"
         >
           {c.author?.avatar_url && (
             <Image
@@ -290,16 +378,16 @@ function CommitsPanel({ commits }: { commits: GHCommit[] }) {
             />
           )}
           <div className="flex-1">
-            <p className="text-sm text-zinc-200 group-hover:text-white transition-colors line-clamp-2 mb-1.5">
+            <p className="text-sm text-slate-700 dark:text-zinc-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors line-clamp-2 mb-1.5">
               {c.commit.message.split('\n')[0]}
             </p>
-            <div className="flex gap-3 text-xs font-mono text-zinc-600">
+            <div className="flex gap-3 text-xs font-mono text-slate-500 dark:text-zinc-600">
               <span>{c.commit.author.name}</span>
               <span>·</span>
               <span>{timeAgo(c.commit.author.date)}</span>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-zinc-700 bg-[#1a1a1a] border border-[#222] rounded px-2 py-0.5 shrink-0">
+          <span className="text-[11px] font-mono text-slate-600 dark:text-zinc-700 bg-zinc-100 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-[#222] rounded px-2 py-0.5 shrink-0">
             {c.sha.slice(0, 7)}
           </span>
         </motion.a>
@@ -319,10 +407,10 @@ function PRPanel({ prs }: { prs: GHPR[] }) {
       {prs.map((pr, i) => {
         const state = pr.merged_at ? 'merged' : pr.state
         const colors = {
-          open: { color: '#4ade80', bg: '#0d2b0d' },
-          merged: { color: '#a78bfa', bg: '#1a0d2b' },
-          closed: { color: '#f87171', bg: '#2b0d0d' },
-        }[state] || { color: '#888', bg: '#1a1a1a' }
+          open: { color: '#4ade80', bg: 'var(--pr-open-bg, #0d2b0d)' },
+          merged: { color: '#a78bfa', bg: 'var(--pr-merged-bg, #1a0d2b)' },
+          closed: { color: '#f87171', bg: 'var(--pr-closed-bg, #2b0d0d)' },
+        }[state] || { color: '#888', bg: 'var(--pr-bg, #1a1a1a)' }
 
         return (
           <motion.a
@@ -333,16 +421,16 @@ function PRPanel({ prs }: { prs: GHPR[] }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.02 }}
             whileHover={{ x: 8 }}
-            className="flex items-start gap-4 p-4 bg-[#111] border border-[#1e1e1e] rounded-xl hover:border-[#2a2a2a] transition-all group"
+            className="flex items-start gap-4 p-4 bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl hover:border-zinc-300 dark:hover:border-[#2a2a2a] transition-all group"
           >
             <span style={{ color: colors.color }} className="text-lg mt-0.5">
               {state === 'open' ? '●' : state === 'merged' ? '✓' : '✕'}
             </span>
             <div className="flex-1">
-              <p className="text-sm text-zinc-200 group-hover:text-white transition-colors mb-1">
+              <p className="text-sm text-slate-700 dark:text-zinc-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors mb-1">
                 #{pr.number} · {pr.title}
               </p>
-              <div className="flex gap-3 text-xs font-mono text-zinc-600">
+              <div className="flex gap-3 text-xs font-mono text-slate-500 dark:text-zinc-600">
                 <span>{pr.user?.login}</span>
                 <span>·</span>
                 <span>{timeAgo(pr.created_at)}</span>
@@ -390,10 +478,10 @@ function ContributorsPanel({ contributors }: { contributors: GHContributor[] }) 
             width={48}
             height={48}
             unoptimized
-            className="w-12 h-12 rounded-full border border-[#1e1e1e] group-hover:border-[#2a2a2a] transition-all"
+            className="w-12 h-12 rounded-full border border-zinc-200 dark:border-[#1e1e1e] group-hover:border-slate-300 dark:group-hover:border-[#2a2a2a] transition-all"
           />
-          <p className="text-xs font-mono text-zinc-300 group-hover:text-white transition-colors">{c.login}</p>
-          <p className="text-[10px] text-zinc-600 font-mono">{fmtNum(c.contributions)} commits</p>
+          <p className="text-xs font-mono text-slate-600 dark:text-zinc-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{c.login}</p>
+          <p className="text-[10px] text-slate-500 dark:text-zinc-600 font-mono">{fmtNum(c.contributions)} commits</p>
         </motion.a>
       ))}
     </motion.div>
@@ -409,12 +497,12 @@ function InsightCard({ icon, title, label, desc, color, delay = 0 }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
       whileHover={{ y: -4 }}
-      className="bg-[#111] border border-[#1e1e1e] rounded-xl p-5 transition-all duration-300 cursor-default"
+      className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-5 transition-all duration-300 cursor-default"
     >
       <div className="text-2xl mb-3">{icon}</div>
-      <h4 className="text-xs font-mono text-zinc-600 uppercase tracking-wider mb-1">{title}</h4>
+      <h4 className="text-xs font-mono text-slate-500 dark:text-zinc-600 uppercase tracking-wider mb-1">{title}</h4>
       <div className="text-xl font-light mb-1" style={{ color }}>{label}</div>
-      <p className="text-xs text-zinc-500">{desc}</p>
+      <p className="text-xs text-slate-600 dark:text-zinc-500">{desc}</p>
     </motion.div>
   )
 }
@@ -427,7 +515,7 @@ function Empty({ msg }: { msg: string }) {
       className="flex flex-col items-center justify-center py-20 text-center"
     >
       <div className="text-4xl mb-4">📭</div>
-      <p className="text-zinc-500 font-mono text-sm">{msg}</p>
+      <p className="text-slate-500 dark:text-zinc-500 font-mono text-sm">{msg}</p>
     </motion.div>
   )
 }

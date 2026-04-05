@@ -59,14 +59,14 @@ export default function Home() {
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            <motion.span className="text-[11px] font-mono text-zinc-500 uppercase tracking-[0.15em]">
+            <motion.span className="text-[11px] font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-[0.15em]">
               GitHub Profile Analyzer
             </motion.span>
           </motion.div>
 
           {/* Title */}
           <motion.div variants={itemVariants}>
-            <h1 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-none mb-5 text-white">
+            <h1 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-none mb-5 text-slate-900 dark:text-white">
               Understand any<br />
               <TypewriterText text="codebase" />
             </h1>
@@ -74,7 +74,7 @@ export default function Home() {
 
           <motion.p
             variants={itemVariants}
-            className="text-[15px] text-zinc-500 leading-relaxed mb-12 max-w-sm"
+            className="text-[15px] text-slate-600 dark:text-zinc-500 leading-relaxed mb-12 max-w-sm"
           >
             Deep insights into GitHub profiles — commits, patterns, languages, and coding personality at a glance.
           </motion.p>
@@ -88,7 +88,7 @@ export default function Home() {
             variants={itemVariants}
             className="mt-5 flex flex-wrap items-center justify-center gap-2"
           >
-            <span className="text-[11px] font-mono text-zinc-700 uppercase tracking-wider mr-1">Try:</span>
+            <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-700 uppercase tracking-wider mr-1">Try:</span>
             {['torvalds', 'gaearon', 'sindresorhus', 'yyx990803'].map((u, i) => (
               <motion.a
                 key={u}
@@ -106,10 +106,9 @@ export default function Home() {
                 }}
                 whileHover={{
                   scale: 1.1,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 }}
                 whileTap={{ scale: 0.95 }}
-                className="text-[11px] font-mono text-zinc-600 border border-[#222] rounded-full px-3 py-1 hover:text-zinc-300 hover:border-[#444] transition-all cursor-pointer"
+                className="text-[11px] font-mono hover:bg-zinc-100 dark:hover:bg-[#1a1a1a] text-slate-600 dark:text-zinc-600 border border-zinc-300 dark:border-[#222] rounded-full px-3 py-1 hover:text-slate-900 dark:hover:text-zinc-300 hover:border-slate-400 dark:hover:border-[#444] transition-all cursor-pointer"
               >
                 @{u}
               </motion.a>
@@ -123,7 +122,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
-          className="absolute bottom-5 inset-x-0 flex items-center justify-center gap-8 text-[11px] font-mono text-zinc-700"
+          className="absolute bottom-5 inset-x-0 flex items-center justify-center gap-8 text-[11px] font-mono text-slate-500 dark:text-zinc-700"
         >
           {['Commit patterns', 'Language analysis', 'PR insights', 'Repo health scores'].map((f, i) => (
             <motion.span
@@ -131,7 +130,7 @@ export default function Home() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1 + i * 0.1, duration: 0.5 }}
-              className="hidden md:block hover:text-zinc-400 transition-colors duration-300"
+              className="hidden md:block hover:text-slate-700 dark:hover:text-zinc-400 transition-colors duration-300"
             >
               {f}
             </motion.span>

@@ -66,7 +66,7 @@ export default function RepoFilter({ repos, username }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="text-xs text-zinc-600 font-mono mt-0.5"
+            className="text-xs text-slate-600 dark:text-zinc-600 font-mono mt-0.5"
           >
             {repos.length} total · {sourceCount} source · {forkedCount} forked
             {filtered.length !== repos.length && (
@@ -92,18 +92,18 @@ export default function RepoFilter({ repos, username }: Props) {
       >
         {/* Search */}
         <motion.div
-          className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-[#444] transition-colors flex-1 min-w-[180px]"
+          className="flex items-center bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-zinc-400 dark:focus-within:border-[#444] transition-colors flex-1 min-w-[180px]"
           whileFocus={{ borderColor: '#444', boxShadow: '0 0 15px rgba(255, 255, 255, 0.05)' }}
           transition={{ duration: 0.2 }}
         >
-          <svg className="w-3.5 h-3.5 ml-3 text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3.5 h-3.5 ml-3 text-slate-400 dark:text-zinc-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search repos..."
-            className="bg-transparent text-sm text-zinc-200 placeholder-zinc-600 font-mono px-2.5 py-2 outline-none w-full"
+            className="bg-transparent text-sm text-slate-900 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-600 font-mono px-2.5 py-2 outline-none w-full"
           />
           <AnimatePresence>
             {query && (
@@ -126,7 +126,7 @@ export default function RepoFilter({ repos, username }: Props) {
         <motion.select
           value={lang}
           onChange={e => setLang(e.target.value)}
-          className="bg-[#111] border border-[#2a2a2a] text-sm text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-[#444] transition-colors cursor-pointer"
+          className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#2a2a2a] text-sm text-slate-800 dark:text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-zinc-400 dark:hover:border-[#444] transition-colors cursor-pointer"
           whileHover={{ borderColor: '#444' }}
           whileTap={{ scale: 0.98 }}
         >
@@ -138,7 +138,7 @@ export default function RepoFilter({ repos, username }: Props) {
         <motion.select
           value={sort}
           onChange={e => setSort(e.target.value as Sort)}
-          className="bg-[#111] border border-[#2a2a2a] text-sm text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-[#444] transition-colors cursor-pointer"
+          className="bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#2a2a2a] text-sm text-slate-800 dark:text-zinc-300 font-mono px-3 py-2 rounded-lg outline-none hover:border-zinc-400 dark:hover:border-[#444] transition-colors cursor-pointer"
           whileHover={{ borderColor: '#444' }}
           whileTap={{ scale: 0.98 }}
         >
@@ -155,8 +155,8 @@ export default function RepoFilter({ repos, username }: Props) {
           whileTap={{ scale: 0.95 }}
           className={`text-xs font-mono px-3 py-2 rounded-lg border transition-all ${
             showForks
-              ? 'bg-[#111] border-[#2a2a2a] text-zinc-500 hover:border-[#444]'
-              : 'bg-[#1a1a1a] border-[#333] text-zinc-300'
+              ? 'bg-white dark:bg-[#111] border-zinc-200 dark:border-[#2a2a2a] text-slate-500 dark:text-zinc-500 hover:border-zinc-400 dark:hover:border-[#444]'
+              : 'bg-zinc-100 dark:bg-[#1a1a1a] border-zinc-300 dark:border-[#333] text-slate-800 dark:text-zinc-300'
           }`}
         >
           {showForks ? 'Hide forks' : 'Show forks'}
@@ -194,6 +194,7 @@ export default function RepoFilter({ repos, username }: Props) {
         ) : (
           <motion.div
             key="grid"
+            layout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

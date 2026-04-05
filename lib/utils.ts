@@ -146,21 +146,77 @@ export function computeCollabScore(repo: GHRepo, prs: GHPR[], contributorCount: 
 // ─── REPO HEALTH SCORE ────────────────────────────────────────────────────────
 export function computeRepoHealth(repo: GHRepo, commits: GHCommit[]) {
   let score = 50
+  const checkpoints: string[] = []
+  const recommendations: string[] = []
   const daysSinceLastPush = (Date.now() - new Date(repo.pushed_at).getTime()) / 86400000
-  if (daysSinceLastPush < 7) score += 20
-  else if (daysSinceLastPush < 30) score += 10
-  else if (daysSinceLastPush > 365) score -= 20
+  
+  if (daysSinceLastPush < 7) {
+    score += 20
+    checkpoints.push('✓ Recently updated')
+  } else if (daysSinceLastPush < 30) {
+    score += 10
+    checkpoints.push('✓ Recently maintained')
+  } else if (daysSinceLastPush > 365) {
+    score -= 20
+    checkpoints.push('✗ No updates in 1+ year')
+    recommendations.push('Keep repository updated regularly')
+  } else {
+    recommendations.push('Push updates more frequently')
+  }
 
-  if (repo.stargazers_count > 100) score += 15
-  else if (repo.stargazers_count > 10) score += 8
-  if (repo.description) score += 5
-  if (repo.topics?.length > 0) score += 5
-  if (repo.homepage) score += 3
-  if (repo.license) score += 5
-  if (repo.open_issues_count > 20) score -= 10
-  if (repo.archived) score = 20
+  if (repo.stargazers_count > 100) {
+    score += 15
+    checkpoints.push('✓ Popular repository')
+  } else if (repo.stargazers_count > 10) {
+    score += 8
+    checkpoints.push('✓ Community interest')
+  } else {
+    recommendations.push('Increase repository visibility')
+  }
+  
+  if (repo.description) {
+    score += 5
+    checkpoints.push('✓ Has description')
+  } else {
+    recommendations.push('Add a repository description')
+  }
+  
+  if (repo.topics?.length > 0) {
+    score += 5
+    checkpoints.push('✓ Topics provided')
+  } else {
+    recommendations.push('Add relevant topics')
+  }
+  
+  if (repo.homepage) {
+    score += 3
+    checkpoints.push('✓ Homepage linked')
+  } else {
+    recommendations.push('Link project homepage')
+  }
+  
+  if (repo.license) {
+    score += 5
+    checkpoints.push('✓ Licensed')
+  } else {
+    recommendations.push('Add an open source license')
+  }
+  
+  if (repo.open_issues_count > 20) {
+    score -= 10
+    checkpoints.push('✗ Many open issues')
+    recommendations.push('Address open issues')
+  }
+  
+  if (repo.archived) {
+    score = 20
+    checkpoints.push('✗ Repository archived')
+  }
 
-  return Math.max(0, Math.min(100, score))
+  const finalScore = Math.max(0, Math.min(100, score))
+  const reason = finalScore > 75 ? 'Excellent health' : finalScore > 50 ? 'Good condition' : 'Needs attention'
+
+  return { score: finalScore, reason, checkpoints, recommendations }
 }
 
 // ─── ACTIVITY STATUS ─────────────────────────────────────────────────────────

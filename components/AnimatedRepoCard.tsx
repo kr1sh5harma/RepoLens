@@ -1,7 +1,10 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 import type { GHRepo } from '@/lib/github'
 import { langColor, timeAgo, fmtNum, repoActivityStatus } from '@/lib/utils'
 
@@ -11,10 +14,21 @@ interface AnimatedRepoCardProps {
 }
 
 export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardProps) {
+  const router = useRouter()
+  const [isNavigating, setIsNavigating] = useState(false)
   const status = repoActivityStatus(repo)
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsNavigating(true)
+    setTimeout(() => {
+      router.push(`/${repo.owner.login}/${repo.name}`)
+    }, 100) // Slight delay to ensure the loader is visible and click feels registered
+  }
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -25,14 +39,15 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
       whileHover={{ scale: 1.02, y: -4 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Link
+      <a
         href={`/${repo.owner.login}/${repo.name}`}
-        className="group block bg-[#111] border border-[#1e1e1e] rounded-xl p-5 hover:border-[#2e2e2e] hover:bg-[#141414] transition-all duration-300"
+        onClick={handleClick}
+        className="group block bg-white dark:bg-[#111] border border-zinc-200 dark:border-[#1e1e1e] rounded-xl p-5 hover:border-zinc-300 dark:hover:border-[#2e2e2e] hover:bg-zinc-50 dark:hover:bg-[#141414] transition-all duration-300"
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-sm font-medium text-white truncate group-hover:text-zinc-100 transition-colors duration-300">
+            <span className="font-mono text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-slate-600 dark:group-hover:text-zinc-100 transition-colors duration-300">
               {repo.name}
             </span>
             {repo.fork && (
@@ -40,7 +55,7 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 + 0.2 }}
-                className="text-[10px] font-mono text-zinc-600 border border-[#2a2a2a] rounded px-1.5 py-0.5 shrink-0"
+                className="text-[10px] font-mono text-slate-500 dark:text-zinc-600 border border-zinc-200 dark:border-[#2a2a2a] rounded px-1.5 py-0.5 shrink-0"
               >
                 fork
               </motion.span>
@@ -62,9 +77,9 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: index * 0.1 + 0.15 }}
-          className="text-[13px] text-zinc-500 leading-relaxed mb-4 line-clamp-2 min-h-[40px]"
+          className="text-[13px] text-slate-600 dark:text-zinc-500 leading-relaxed mb-4 line-clamp-2 min-h-[40px]"
         >
-          {repo.description || <span className="italic text-zinc-700">No description</span>}
+          {repo.description || <span className="italic text-slate-400 dark:text-zinc-700">No description</span>}
         </motion.p>
 
         {/* Topics */}
@@ -84,7 +99,7 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
                   delay: index * 0.1 + 0.2 + i * 0.05,
                   duration: 0.3,
                 }}
-                className="text-[10px] font-mono text-zinc-500 bg-[#1a1a1a] border border-[#252525] rounded-full px-2 py-0.5 hover:bg-[#222] transition-colors duration-200"
+                className="text-[10px] font-mono text-slate-600 dark:text-zinc-500 bg-zinc-100 dark:bg-[#1a1a1a] border border-zinc-200 dark:border-[#252525] rounded-full px-2 py-0.5 hover:bg-zinc-200 dark:hover:bg-[#222] transition-colors duration-200"
               >
                 {t}
               </motion.span>
@@ -94,7 +109,7 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 + 0.35 }}
-                className="text-[10px] font-mono text-zinc-700"
+                className="text-[10px] font-mono text-slate-500 dark:text-zinc-700"
               >
                 +{repo.topics.length - 3}
               </motion.span>
@@ -107,27 +122,27 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: index * 0.1 + 0.25 }}
-          className="flex items-center gap-4 text-xs text-zinc-600 font-mono"
+          className="flex items-center gap-4 text-xs text-slate-500 dark:text-zinc-600 font-mono"
         >
           {repo.language && (
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: langColor(repo.language) }} />
-              {repo.language}
+              <span className="text-slate-700 dark:text-zinc-400">{repo.language}</span>
             </span>
           )}
           {repo.stargazers_count > 0 && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 text-slate-600 dark:text-zinc-500">
               <StarIcon />
               {fmtNum(repo.stargazers_count)}
             </span>
           )}
           {repo.forks_count > 0 && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 text-slate-600 dark:text-zinc-500">
               <ForkIcon />
               {fmtNum(repo.forks_count)}
             </span>
           )}
-          <span className="ml-auto text-zinc-700">{timeAgo(repo.pushed_at)}</span>
+          <span className="ml-auto text-slate-400 dark:text-zinc-700">{timeAgo(repo.pushed_at)}</span>
         </motion.div>
 
         {/* Arrow indicator */}
@@ -135,17 +150,23 @@ export default function AnimatedRepoCard({ repo, index = 0 }: AnimatedRepoCardPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: index * 0.1 + 0.3 }}
-          className="mt-4 pt-3 border-t border-[#1a1a1a] flex items-center justify-end"
+          className="mt-4 pt-3 border-t border-zinc-200 dark:border-[#1a1a1a] flex items-center justify-end h-10"
         >
-          <motion.span
-            className="text-[11px] font-mono text-zinc-700 group-hover:text-zinc-400 transition-colors duration-300"
-            whileHover={{ x: 4 }}
-            transition={{ duration: 0.2 }}
-          >
-            View analysis →
-          </motion.span>
+          {isNavigating ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400 dark:text-zinc-500" />
+            </motion.div>
+          ) : (
+            <motion.span
+              className="text-[11px] font-mono text-slate-500 dark:text-zinc-700 group-hover:text-slate-800 dark:group-hover:text-zinc-400 transition-colors duration-300 flex items-center"
+              whileHover={{ x: 4 }}
+              transition={{ duration: 0.2 }}
+            >
+              View analysis →
+            </motion.span>
+          )}
         </motion.div>
-      </Link>
+      </a>
     </motion.div>
   )
 }
