@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/favicon.svg" alt="GitGet Logo" width="100" />
+  
   <h1>GitGet 🚀</h1>
   <p><strong>A clean, highly insightful, and visually stunning GitHub profile analyzer built with Next.js 14.</strong></p>
 
