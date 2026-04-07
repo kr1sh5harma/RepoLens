@@ -17,7 +17,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'RepoLens',
+  title: 'GitGet',
   description: 'Deep insights into any GitHub profile. Understand repos, commits, patterns and coding personality at a glance.',
   icons: {
     icon: '/favicon.svg',

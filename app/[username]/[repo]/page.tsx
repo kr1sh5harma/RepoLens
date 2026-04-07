@@ -12,11 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const repo = await getRepo(params.username, params.repo)
     return {
-      title: `${repo.full_name} — RepoLens`,
+      title: `${repo.full_name} — `,
       description: repo.description ?? `GitHub repo analysis for ${repo.full_name}`,
     }
   } catch {
-    return { title: 'Repo not found — RepoLens' }
+    return { title: 'Repo not found — GitGet' }
   }
 }
 

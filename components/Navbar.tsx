@@ -33,7 +33,7 @@ export default function Navbar({ username, repo }: NavbarProps) {
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <span className="font-medium text-slate-900 dark:text-white tracking-tight hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors duration-300">RepoLens</span>
+              <span className="font-medium text-slate-900 dark:text-white tracking-tight hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors duration-300">GitGet</span>
             </Link>
           </motion.div>
 

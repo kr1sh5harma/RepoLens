@@ -38,12 +38,12 @@ export default function ShareProfileMenu({ user, archetype, totalStars, totalFor
     
     // In a real server-side Next.js, we'd use <meta property="og:image">. 
     // For now, we open the share dialog for the URL.
-    const url = `https://repolens.com/${user.login}` // or window.location.href
+    const url = `https://gitget.com/${user.login}` // or window.location.href
     let text = ''
     let shareUrl = ''
     
     if (platform === 'twitter') {
-      text = `Check out my GitHub Developer Profile on RepoLens! 🚀\nI'm a "${archetype.label}" developer with ${totalStars} stars.\n`
+      text = `Check out my GitHub Developer Profile on GitGet! 🚀\nI'm a "${archetype.label}" developer with ${totalStars} stars.\n`
       shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`
     } else {
       shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`

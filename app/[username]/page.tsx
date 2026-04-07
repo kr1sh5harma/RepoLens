@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const user = await getUser(params.username)
     return {
-      title: `${user.name || user.login} — RepoLens`,
+      title: `${user.name || user.login} — GitGet`,
       description: `GitHub profile analysis for ${user.login}. ${user.public_repos} repos, ${user.followers} followers.`,
       openGraph: {
         type: 'website',
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     }
   } catch {
-    return { title: 'User not found — RepoLens' }
+    return { title: 'User not found — GitGet' }
   }
 }
 

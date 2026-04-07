@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import { getUser, getUserRepos } from '@/lib/github'
 import { computeArchetype, computeOSImpact } from '@/lib/utils'
 
-export const alt = 'RepoLens Developer Profile'
+export const alt = 'GitGet Developer Profile'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
